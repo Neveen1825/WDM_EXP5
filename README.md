@@ -1,5 +1,5 @@
 ### EX5 Information Retrieval Using Boolean Model in Python
-### DATE: 
+### DATE: 28-09-2024
 ### AIM: To implement Information Retrieval Using Boolean Model in Python.
 ### Description:
 <div align = "justify">
@@ -22,8 +22,7 @@ The Boolean model in Information Retrieval (IR) is a fundamental model used for 
     <p>c) For each term in the query, it retrieves documents containing that term and performs Boolean operations (AND, OR, NOT) based on the query's structure.
 
 ### Program:
-
-
+```
 import numpy as np
 import pandas as pd
 
@@ -34,48 +33,98 @@ class BooleanRetrieval:
 
     def index_document(self, doc_id, text):
         terms = text.lower().split()
-        print("document-", doc_id, terms)
-
         for term in terms:
             if term not in self.index:
                 self.index[term] = set()
             self.index[term].add(doc_id)
 
     def create_documents_matrix(self, documents):
-        //type your code here
+        terms = list(self.index.keys())
+        num_docs = len(documents)
+        num_terms = len(terms)
+
+        self.documents_matrix = np.zeros((num_docs, num_terms), dtype=int)
+
+        for i, (doc_id, text) in enumerate(documents.items()):
+            doc_terms = text.lower().split()
+            for term in doc_terms:
+                if term in self.index:
+                    term_id = terms.index(term)
+                    self.documents_matrix[i, term_id] = 1
 
     def print_documents_matrix_table(self):
-       //type yuor code here
+        df = pd.DataFrame(self.documents_matrix, columns=self.index.keys())
+        print(df)
+
+    def print_all_terms(self):
+        print("All terms in the documents:")
+        print(list(self.index.keys()))
 
     def boolean_search(self, query):
-        //type your code here
+        query = query.lower().split()
+        result_docs = None
+        all_docs = set(range(1, len(self.documents_matrix) + 1))  # Set of all document IDs
 
+        i = 0
+        while i < len(query):
+            term = query[i]
+            
+            if term == "and":
+                i += 1
+                continue  # AND is implicit, so we skip it.
+            
+            elif term == "or":
+                i += 1
+                next_term = query[i]
+                if next_term in self.index:
+                    result_docs = result_docs | self.index[next_term] if result_docs else self.index[next_term]
+            
+            elif term == "not":
+                i += 1
+                next_term = query[i]
+                if next_term in self.index:
+                    result_docs = result_docs - self.index[next_term] if result_docs else all_docs - self.index[next_term]
+            
+            else:
+                if term in self.index:
+                    if result_docs is None:
+                        result_docs = self.index[term]
+                    else:
+                        result_docs = result_docs & self.index[term]  # AND by default
+            
+            i += 1
 
-# Example usage:
+        return result_docs if result_docs else set()
+
 if __name__ == "__main__":
     indexer = BooleanRetrieval()
 
-    # Indexing documents
     documents = {
         1: "Python is a programming language",
         2: "Information retrieval deals with finding information",
-        3: "Boolean models are used in information retrieval"
+        3: "NOT THE BOOLEAN"
     }
 
     for doc_id, text in documents.items():
         indexer.index_document(doc_id, text)
 
-    # Create a matrix of zeros and ones
     indexer.create_documents_matrix(documents)
     indexer.print_documents_matrix_table()
-
-    # Print all terms in the documents
     indexer.print_all_terms()
 
-    # Boolean search
-    query1 = input("Enter your boolean query: ")
-    print(f"Results for '{query1}': {indexer.boolean_search(query1)}")
+    query = input("Enter your boolean query: ")
+    results = indexer.boolean_search(query)
+    if results:
+        print(f"Results for '{query}': {results}")
+    else:
+        print("No results found for the query.")
+````
+
 
 ### Output:
 
+![Screenshot 2024-09-28 135951](https://github.com/user-attachments/assets/50a1b838-3ceb-4805-b4d0-e28222cbc0e0)
+
+
 ### Result:
+CODE EXECUTED SUCCESSFULLY
